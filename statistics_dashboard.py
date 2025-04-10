@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from db_utils import get_all_students, get_scores, get_attendance, get_assignments, submit_assignment
+
+init_db()  # ✅ DB 테이블 초기화 수행
+
 from fpdf import FPDF
 import os
 import tempfile
