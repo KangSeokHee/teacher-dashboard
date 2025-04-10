@@ -58,3 +58,17 @@ def submit_assignment(name, title):
     c.execute("UPDATE assignments SET submitted=1 WHERE name=? AND title=?", (name, title))
     conn.commit()
     conn.close()
+
+def add_score(name, subject, score):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("INSERT INTO scores (name, subject, score) VALUES (?, ?, ?)", (name, subject, score))
+    conn.commit()
+    conn.close()
+
+def add_assignment(name, title, description, due_date, filename, submitted):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("INSERT INTO assignments (name, title, description, due_date, filename, submitted) VALUES (?, ?, ?, ?, ?, ?)", (name, title, description, due_date, filename, int(submitted)))
+    conn.commit()
+    conn.close()
