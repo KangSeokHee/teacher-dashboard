@@ -1,5 +1,6 @@
-
 import streamlit as st
+st.set_page_config(page_title="선생님 대시보드", layout="wide")
+
 import pandas as pd
 import matplotlib.pyplot as plt
 from db_utils import init_db, get_all_students, get_scores, get_attendance, get_assignments, submit_assignment, add_student
