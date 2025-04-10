@@ -1,16 +1,4 @@
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-from db_utils import get_all_students, get_scores, get_attendance, get_assignments, submit_assignment
 
-from db_utils import init_db
-init_db()
-
-from fpdf import FPDF
-import os
-import tempfile
-
-# 학생 등록 UI 추가
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -21,7 +9,6 @@ import tempfile
 
 init_db()
 
-# 로그인 설정
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
@@ -44,7 +31,7 @@ if not st.session_state.logged_in:
     login()
     st.stop()
 
-# 학생 등록 사이드바
+# 사이드바: 학생 등록
 st.sidebar.header("📚 학생 등록")
 new_name = st.sidebar.text_input("학생 이름")
 new_grade = st.sidebar.selectbox("학년", [f"초등학교 {i}학년" for i in range(1, 7)] + [f"중학교 {i}학년" for i in range(1, 4)] + [f"고등학교 {i}학년" for i in range(1, 4)])
@@ -55,80 +42,19 @@ if st.sidebar.button("등록"):
         st.sidebar.success("등록 완료!")
     else:
         st.sidebar.warning("학생 이름을 입력해주세요.")
-# 로그인 설정
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
 
-users = {"teacher1": "pw123", "admin": "admin123"}
-
-
-st.set_page_config(page_title="📊 학급 통계 분석", layout="wide")
-st.title("📊 학생별 통계 대시보드")
-st.markdown("각종 항목에 대한 통계 분석 결과를 시각적으로 확인하세요.")
-
+# 간단히 평균 점수 예시
+st.title("📊 학생 대시보드 예시")
 students = get_all_students()
-
-
-
-# 평균 성적
-st.subheader("🧮 평균 성적 분석")
-avg_scores = []
-for name, _ in students:
+for name, grade in students:
+    st.subheader(f"{name} ({grade})")
     scores = get_scores(name)
     if scores:
-        점수값들 = [s for _, s in scores]
-        avg = sum(점수값들) / len(점수값들)
-        avg_scores.append((name, avg))
+        df = pd.DataFrame(scores, columns=["과목", "점수"])
+        st.dataframe(df)
+    else:
+        st.info("성적 정보 없음")
 
-if avg_scores:
-    df_score = pd.DataFrame(avg_scores, columns=["이름", "평균 점수"])
-    fig, ax = plt.subplots()
-    df_score.set_index("이름").plot(kind="bar", legend=False, ax=ax)
-    ax.set_ylabel("점수")
-    st.pyplot(fig)
-else:
-    st.info("아직 성적 데이터가 없습니다.")
-
-# 출석률
-st.subheader("📅 출석률 분석")
-attendance_rates = []
-for name, _ in students:
-    출결 = get_attendance(name)
-    총 = len(출결)
-    출석수 = len([s for _, s in 출결 if s == "출석"])
-    출석률 = (출석수 / 총) * 100 if 총 > 0 else 0
-    attendance_rates.append((name, 출석률))
-
-if attendance_rates:
-    df_att = pd.DataFrame(attendance_rates, columns=["이름", "출석률 (%)"])
-    fig2, ax2 = plt.subplots()
-    df_att.set_index("이름").plot(kind="bar", legend=False, color="green", ax=ax2)
-    ax2.set_ylabel("출석률 (%)")
-    st.pyplot(fig2)
-else:
-    st.info("출결 데이터가 없습니다.")
-
-# 과제 제출률
-st.subheader("📝 과제 제출률 분석")
-submit_rates = []
-for name, _ in students:
-    과제 = get_assignments(name)
-    총과제 = len(과제)
-    제출완료 = len([1 for _, _, _, _, s in 과제 if s == 1])
-    제출률 = (제출완료 / 총과제) * 100 if 총과제 > 0 else 0
-    submit_rates.append((name, 제출률))
-
-if submit_rates:
-    df_sub = pd.DataFrame(submit_rates, columns=["이름", "제출률 (%)"])
-    fig3, ax3 = plt.subplots()
-    df_sub.set_index("이름").plot(kind="bar", legend=False, color="orange", ax=ax3)
-    ax3.set_ylabel("제출률 (%)")
-    st.pyplot(fig3)
-else:
-    st.info("과제 데이터가 없습니다.")
-
-# 로그아웃
-st.markdown("---")
 if st.button("🔓 로그아웃"):
     st.session_state.logged_in = False
     st.rerun()
