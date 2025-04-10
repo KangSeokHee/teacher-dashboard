@@ -10,6 +10,17 @@ from fpdf import FPDF
 import os
 import tempfile
 
+# 학생 등록 UI 추가
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+from db_utils import init_db, get_all_students, get_scores, get_attendance, get_assignments, submit_assignment, add_student
+from fpdf import FPDF
+import os
+import tempfile
+
+init_db()
+
 # 로그인 설정
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -33,11 +44,31 @@ if not st.session_state.logged_in:
     login()
     st.stop()
 
+# 학생 등록 사이드바
+st.sidebar.header("📚 학생 등록")
+new_name = st.sidebar.text_input("학생 이름")
+new_grade = st.sidebar.selectbox("학년", [f"초등학교 {i}학년" for i in range(1, 7)] + [f"중학교 {i}학년" for i in range(1, 4)] + [f"고등학교 {i}학년" for i in range(1, 4)])
+
+if st.sidebar.button("등록"):
+    if new_name:
+        add_student(new_name, new_grade)
+        st.sidebar.success("등록 완료!")
+    else:
+        st.sidebar.warning("학생 이름을 입력해주세요.")
+# 로그인 설정
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+users = {"teacher1": "pw123", "admin": "admin123"}
+
+
 st.set_page_config(page_title="📊 학급 통계 분석", layout="wide")
 st.title("📊 학생별 통계 대시보드")
 st.markdown("각종 항목에 대한 통계 분석 결과를 시각적으로 확인하세요.")
 
 students = get_all_students()
+
+
 
 # 평균 성적
 st.subheader("🧮 평균 성적 분석")
